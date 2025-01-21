@@ -17,55 +17,33 @@ test_dir="data/test"
 train_datagen = ImageDataGenerator(rescale=1./255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 test_datagen = ImageDataGenerator(rescale=1./255)
 
-train_generator = train_datagen.flow_from_directory(train_dir, target_size=(150,150), batch_size=20, class_mode="categorical", classes=["Acne and Rosacea Photos",
-    "Actinic Keratosis Basal Cell Carcinoma and other Malignant Lesions",
-    "Atopic Dermatitis Photos",
-    "Bullous Disease Photos",
-    "Cellulitis Impetigo and other Bacterial Infections",
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(224,224), batch_size=20, class_mode="categorical", classes=["Acne and Rosacea Photos",
     "Eczema Photos",
-    "Exanthems and Drug Eruptions",
     "Hair Loss Photos Alopecia and other Hair Diseases",
     "Herpes HPV and other STDs Photos",
-    "Light Diseases and Disorders of Pigmentation",
-    "Lupus and other Connective Tissue Diseases",
     "Melanoma Skin Cancer Nevi and Moles",
     "Nail Fungus and other Nail Disease",
-    "Poison Ivy Photos and other Contact Dermatitis",
     "Psoriasis Pictures Lichen Planus and related Diseases",
     "Scabies Lyme Disease and other Infestations and Bites",
     "Seborrheic Keratoses and other Benign Tumors",
-    "Systemic Disease",
-    "Tinea Ringworm Candidiasis and other Fungal Infections",
     "Urticaria Hives",
     "Vascular Tumors",
-    "Vasculitis Photos",
-    "Warts Molluscum and other Viral Infections"])
+    "Vasculitis Photos"])
 
-validation_generator = test_datagen.flow_from_directory(test_dir, target_size=(150,150), batch_size=20, class_mode="categorical", classes=["Acne and Rosacea Photos",
-    "Actinic Keratosis Basal Cell Carcinoma and other Malignant Lesions",
-    "Atopic Dermatitis Photos",
-    "Bullous Disease Photos",
-    "Cellulitis Impetigo and other Bacterial Infections",
+validation_generator = test_datagen.flow_from_directory(test_dir, target_size=(224,224), batch_size=20, class_mode="categorical", classes=["Acne and Rosacea Photos",
     "Eczema Photos",
-    "Exanthems and Drug Eruptions",
     "Hair Loss Photos Alopecia and other Hair Diseases",
     "Herpes HPV and other STDs Photos",
-    "Light Diseases and Disorders of Pigmentation",
-    "Lupus and other Connective Tissue Diseases",
     "Melanoma Skin Cancer Nevi and Moles",
     "Nail Fungus and other Nail Disease",
-    "Poison Ivy Photos and other Contact Dermatitis",
     "Psoriasis Pictures Lichen Planus and related Diseases",
     "Scabies Lyme Disease and other Infestations and Bites",
     "Seborrheic Keratoses and other Benign Tumors",
-    "Systemic Disease",
-    "Tinea Ringworm Candidiasis and other Fungal Infections",
     "Urticaria Hives",
     "Vascular Tumors",
-    "Vasculitis Photos",
-    "Warts Molluscum and other Viral Infections"])
+    "Vasculitis Photos"])
 
-input_shape = (150,150,3)
+input_shape = (224,224,3)
 
 pre_trained_model = VGG16(input_shape=input_shape, include_top=False, weights="imagenet")
 
@@ -81,7 +59,7 @@ last_output = last_layer.output
 x = GlobalMaxPooling2D()(last_output)
 x = Dense(512, activation='relu')(x)
 x = Dropout(0.5)(x)
-x = Dense(23, activation='softmax')(x)
+x = Dense(12, activation='softmax')(x)
 
 model = Model(pre_trained_model.input, x)
 
@@ -91,7 +69,7 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
 
 model.fit(
     train_generator,
-    epochs=10,
+    epochs=5,
     validation_data=validation_generator
 )
 
