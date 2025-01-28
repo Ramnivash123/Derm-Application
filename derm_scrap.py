@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import gradio as gr
 
-def scrape_wikipedia(disease_name):
+def scrape_wikipedia_causes(disease_name):
     # Format the disease name for the Wikipedia URL
     formatted_name = disease_name.replace(" ", "_")
     url = f"https://en.wikipedia.org/wiki/{formatted_name}"
@@ -19,30 +19,33 @@ def scrape_wikipedia(disease_name):
         # Parse the HTML content
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # Extract the title of the page
-        title = soup.find('h1', id='firstHeading').text.strip()
-        
-        # Extract the first paragraph under the main content
-        paragraphs = soup.find('div', class_='mw-parser-output').find_all('p', recursive=False)
-        content = "\n".join([p.text.strip() for p in paragraphs if p.text.strip()])
-        
-        return f"Title: {title}\n\nIntroduction:\n{content}"
+        # Locate the "Causes" section
+        causes_label = soup.find('th', text="Causes")
+        if causes_label:
+            causes_data = causes_label.find_next_sibling('td')
+            if causes_data:
+                causes_text = causes_data.get_text(separator=" ", strip=True)
+                return f"Causes of {disease_name}:\n{causes_text}"
+            else:
+                return f"Causes section found, but no details available for '{disease_name}'."
+        else:
+            return f"Causes section not found for '{disease_name}'."
     elif response.status_code == 404:
         return f"Page not found for '{disease_name}'. Please check the spelling or try another term."
     else:
         return f"Failed to fetch data from Wikipedia (status code: {response.status_code})."
 
 # Gradio Interface
-def fetch_info(disease_name):
-    return scrape_wikipedia(disease_name)
+def fetch_causes(disease_name):
+    return scrape_wikipedia_causes(disease_name)
 
 # Create Gradio app
 interface = gr.Interface(
-    fn=fetch_info,
+    fn=fetch_causes,
     inputs=gr.Textbox(label="Enter Disease Name", placeholder="e.g., Scabies"),
-    outputs=gr.Textbox(label="Wikipedia Information"),
-    title="Wikipedia Disease Scraper",
-    description="Enter a disease name to scrape information from Wikipedia."
+    outputs=gr.Textbox(label="Wikipedia Causes Information"),
+    title="Wikipedia Causes Scraper",
+    description="Enter a disease name to scrape the 'Causes' section from Wikipedia."
 )
 
 # Launch the app
